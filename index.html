@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nepali Calendar 2082 BS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .calendar-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .calendar-header h2 {
+            font-size: 1.6rem; /* Slightly reduced size for potentially longer text */
+            font-weight: 600;
+            color: #343a40;
+            text-align: center; /* Center heading text */
+            flex-grow: 1; /* Allow heading to take available space */
+            margin: 0 1rem; /* Add some margin around heading */
+        }
+        .calendar-header .btn {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            flex-shrink: 0; /* Prevent buttons from shrinking */
+        }
+        .calendar-header .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calendar-table th, .calendar-table td {
+            text-align: center;
+            padding: 0.5rem 0.25rem;
+            border: 1px solid #e9ecef;
+            font-weight: 500;
+        }
+        .calendar-table th {
+            background-color: #f1f3f5;
+            color: #495057;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.75rem 0.25rem;
+        }
+        .calendar-table th:last-child { /* Saturday Header */
+             color: red;
+        }
+        .calendar-table td {
+            height: 70px;
+            vertical-align: top;
+            font-size: 1rem;
+            cursor: default;
+            transition: background-color 0.2s ease;
+            position: relative;
+            padding-top: 0.3rem;
+        }
+        .calendar-table td:hover:not(.empty) {
+             background-color: #e9ecef;
+        }
+        .date-container {
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             justify-content: flex-start;
+             height: 100%;
+        }
+        .nepali-day {
+             font-size: 1.2em;
+             font-weight: 600;
+             line-height: 1.2;
+             font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+        .gregorian-day {
+             font-size: 0.75em;
+             color: #6c757d;
+             line-height: 1.1;
+             margin-top: 2px;
+        }
+        .calendar-table .today .date-container {
+            background-color: #0d6efd;
+            color: #ffffff !important;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 5px;
+        }
+         .calendar-table .today .nepali-day {
+             color: #ffffff !important;
+             font-weight: 700 !important;
+             font-size: 1.1em;
+         }
+         .calendar-table .today .gregorian-day {
+             color: #ffffff !important;
+             font-size: 0.65em;
+             margin-top: 0;
+         }
+         .calendar-table .empty {
+            background-color: #f8f9fa;
+            border-color: transparent;
+        }
+        .calendar-table .saturday-date:not(.holiday-date):not(.today) .nepali-day,
+        .calendar-table .saturday-date:not(.holiday-date):not(.today) .gregorian-day {
+            color: red;
+        }
+        .calendar-table .holiday-date:not(.today) .nepali-day,
+        .calendar-table .holiday-date:not(.today) .gregorian-day {
+            color: red;
+        }
+        .calendar-table .holiday-date:not(.today) .nepali-day {
+             font-weight: bold;
+        }
+        .calendar-table .holiday-date[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 105%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #343a40;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .current-date-info {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #e9ecef;
+            border-radius: 0.375rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .nepali-date {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container calendar-container">
+        <div class="calendar-header">
+            <button id="prev-month" class="btn btn-outline-secondary">&lt;</button>
+            <h2 id="month-year">Month Year</h2> {/* The comment is definitely removed now */}
+            <button id="next-month" class="btn btn-outline-secondary">&gt;</button>
+        </div>
+
+        <table class="calendar-table table-bordered">
+            <thead>
+                <tr>
+                    <th>आइत</th> <th>सोम</th> <th>मंगल</th> <th>बुध</th> <th>बिही</th> <th>शुक्र</th> <th>शनि</th>
+                </tr>
+            </thead>
+            <tbody id="calendar-body">
+                </tbody>
+        </table>
+
+        <div class="current-date-info" id="current-date-info">
+            Loading date...
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- DOM Elements ---
+        const monthYearElement = document.getElementById('month-year');
+        const calendarBody = document.getElementById('calendar-body');
+        const prevMonthButton = document.getElementById('prev-month');
+        const nextMonthButton = document.getElementById('next-month');
+        const currentDateInfoElement = document.getElementById('current-date-info');
+
+        // --- Nepali Date Data (ONLY for 2082 BS) ---
+        const nepaliMonthDays = {
+            2082: [31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30] // Baisakh to Chaitra
+        };
+        const TARGET_YEAR = 2082;
+        const BAISAKH_1_2082_GREG = new Date(Date.UTC(2025, 3, 14)); // April 14, 2025 (Monday)
+
+        const nepaliMonths = [
+            "बैशाख", "जेठ", "असार", "श्रावण", "भदौ", "आश्विन",
+            "कार्तिक", "मंसिर", "पौष", "माघ", "फाल्गुन", "चैत्र"
+        ];
+        const nepaliDays = ["आइत", "सोम", "मंगल", "बुध", "बिही", "शुक्र", "शनि"];
+
+        // --- Holiday Data for 2082 BS ---
+        const holidays_2082 = {
+            0: { 1: "Nepali New Year", 11: "Loktantra Diwas", 18: "Labour Day", 29: "Buddha Jayanti" },
+            1: { 15: "Republic Day" }, 2: {}, 3: {},
+            4: { 10: "Haritalika Teej (Women)" },
+            5: { 3: "Constitution Day", 6: "Ghatasthapana", 13: "Dashain Holiday", 14: "Dashain Holiday", 15: "Dashain Holiday", 16: "Dashain Holiday / Fulpati", 17: "Dashain Holiday / Maha Ashtami", 18: "Dashain Holiday / Vijaya Dashami" },
+            6: { 3: "Tihar Holiday / Laxmi Puja", 4: "Tihar Holiday", 5: "Tihar Holiday / Mha Puja", 6: "Tihar Holiday / Bhai Tika", 7: "Tihar Holiday" },
+            7: { 18: "Udhauli Parva / Yomari Punhi" },
+            8: { 10: "Christmas Day", 15: "Tamu Lhosar", 27: "Prithvi Jayanti" },
+            9: { 1: "Maghe Sankranti", 5: "Sonam Lhosar", 16: "Martyrs Day" },
+            10: { 3: "Maha Shivaratri", 6: "Gyalpo Lhosar", 7: "Democracy Day" }, 11: {}
+        };
+
+        // --- State ---
+        let currentNepaliYear = TARGET_YEAR;
+        let currentNepaliMonth;
+        let todayGregorian = new Date();
+        let todayNepali = { year: -1, month: -1, day: -1 };
+
+        // --- Date Conversion (Approximate - only for 'Today' info) ---
+        function gregorianToNepaliApprox(gregDate) {
+            const gregYear = gregDate.getFullYear();
+            const gregMonth = gregDate.getMonth();
+            const gregDay = gregDate.getDate();
+            let nepYear = gregYear + 57;
+            let nepMonth = (gregMonth + 9) % 12;
+            if (gregMonth < 3 || (gregMonth === 3 && gregDay < 14)) {
+                nepYear = gregYear + 56;
+            }
+            let nepDay = gregDay + (nepaliMonthDays[TARGET_YEAR]?.[0] || 31) - 14;
+
+            if (nepYear === TARGET_YEAR) {
+                 nepMonth = Math.max(0, Math.min(11, nepMonth));
+                 let dayEstimate = gregDay + 15;
+                 const daysInMonth = getDaysInNepaliMonth(nepYear, nepMonth);
+                 nepDay = Math.max(1, Math.min(daysInMonth, dayEstimate % (daysInMonth+1) ));
+                 return { year: nepYear, month: nepMonth, day: nepDay };
+            } else {
+                 const approxDaysInMonth = 30;
+                 nepDay = Math.max(1, Math.min(approxDaysInMonth, (gregDay + 15) % (approxDaysInMonth+1)));
+                 nepMonth = Math.max(0, Math.min(11, nepMonth));
+                 return { year: -1, month: nepMonth, day: nepDay, estimatedYear: nepYear };
+            }
+        }
+
+        // --- Helper Functions ---
+        function getDaysInNepaliMonth(year, month) {
+            if (year === TARGET_YEAR && nepaliMonthDays[year]?.[month] !== undefined) {
+                 return nepaliMonthDays[year][month];
+            }
+            console.warn(`Month day data not found for ${year}-${month + 1}. Returning fallback 30 days.`);
+            return 30;
+        }
+
+        function getNepaliFirstDayOfMonth(year, month) {
+            if (year !== TARGET_YEAR) { return 0; }
+            const baisakhStartDayIndex = 1; // Baisakh 1, 2082 BS = April 14, 2025 = Monday
+            if (month === 0) { return baisakhStartDayIndex; }
+            else {
+                let dayOffset = 0;
+                for (let m = 0; m < month; m++) { dayOffset += getDaysInNepaliMonth(TARGET_YEAR, m); }
+                return (baisakhStartDayIndex + dayOffset) % 7;
+            }
+        }
+
+        function getGregorianDate(nepYear, nepMonth, nepDay) {
+            if (nepYear !== TARGET_YEAR) { return null; }
+            let totalDayOffset = nepDay - 1;
+            for (let m = 0; m < nepMonth; m++) {
+                totalDayOffset += getDaysInNepaliMonth(TARGET_YEAR, m);
+            }
+            let gregDate = new Date(BAISAKH_1_2082_GREG);
+            gregDate.setUTCDate(gregDate.getUTCDate() + totalDayOffset);
+            return gregDate;
+        }
+
+        // --- Calendar Rendering ---
+        function renderCalendar(year, month) {
+            year = TARGET_YEAR;
+            calendarBody.innerHTML = ''; // Clear previous grid first
+
+            // --- Update Heading ---
+            const daysInMonth = getDaysInNepaliMonth(year, month);
+            const startDate = getGregorianDate(year, month, 1);
+            const endDate = getGregorianDate(year, month, daysInMonth);
+            let gregorianRangeStr = "";
+
+            if (startDate && endDate) {
+                const startMonthStr = startDate.toLocaleDateString('en-US', { month: 'short' });
+                const startYearStr = startDate.getUTCFullYear();
+                const endMonthStr = endDate.toLocaleDateString('en-US', { month: 'short' });
+                const endYearStr = endDate.getUTCFullYear();
+
+                if (startYearStr === endYearStr) {
+                    if (startMonthStr === endMonthStr) {
+                        gregorianRangeStr = `(${startMonthStr} ${startYearStr})`;
+                    } else {
+                        gregorianRangeStr = `(${startMonthStr} / ${endMonthStr} ${startYearStr})`;
+                    }
+                } else {
+                    gregorianRangeStr = `(${startMonthStr} ${startYearStr} / ${endMonthStr} ${endYearStr})`;
+                }
+            }
+            // Set the combined heading text
+            monthYearElement.textContent = `${nepaliMonths[month]} ${year} ${gregorianRangeStr}`;
+            // --- End Heading Update ---
+
+
+            // --- Disable/Enable Buttons ---
+            prevMonthButton.disabled = (month === 0);
+            nextMonthButton.disabled = (month === 11);
+            // --- End Button Logic ---
+
+            // --- Render Grid ---
+            const firstDay = getNepaliFirstDayOfMonth(year, month);
+            let date = 1;
+            let rows = Math.ceil((daysInMonth + firstDay) / 7);
+
+            for (let i = 0; i < rows; i++) {
+                let row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    let cell = document.createElement('td');
+                    if (i === 0 && j < firstDay || date > daysInMonth) {
+                        cell.classList.add('empty');
+                    } else {
+                        const dateContainer = document.createElement('div');
+                        dateContainer.classList.add('date-container');
+
+                        const nepaliDayDiv = document.createElement('div');
+                        nepaliDayDiv.classList.add('nepali-day');
+                        nepaliDayDiv.textContent = date;
+
+                        const gregDate = getGregorianDate(year, month, date);
+                        const gregorianDayDiv = document.createElement('div');
+                        gregorianDayDiv.classList.add('gregorian-day');
+                        if (gregDate) {
+                            gregorianDayDiv.textContent = `${gregDate.getUTCDate()} ${gregDate.toLocaleDateString('en-US', { month: 'short' })}`;
+                        } else {
+                             gregorianDayDiv.textContent = '-';
+                        }
+
+                        dateContainer.appendChild(nepaliDayDiv);
+                        dateContainer.appendChild(gregorianDayDiv);
+                        cell.appendChild(dateContainer);
+
+                        if (j === 6) { cell.classList.add('saturday-date'); }
+                        const holidayName = holidays_2082[month]?.[date];
+                        if (holidayName) {
+                            cell.classList.add('holiday-date');
+                            cell.title = holidayName;
+                        }
+                        if (year === todayNepali.year && month === todayNepali.month && date === todayNepali.day) {
+                             cell.classList.add('today');
+                        }
+                        date++;
+                    }
+                    row.appendChild(cell);
+                }
+                calendarBody.appendChild(row);
+            }
+            // --- End Render Grid ---
+        }
+
+         // --- Display Today's Date ---
+         function displayCurrentDateInfo() {
+            const gregDayName = todayGregorian.toLocaleDateString('en-US', { weekday: 'long' });
+            const gregDateString = todayGregorian.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const estimatedNepali = gregorianToNepaliApprox(todayGregorian);
+            todayNepali = estimatedNepali;
+            const displayYear = estimatedNepali.estimatedYear !== undefined ? estimatedNepali.estimatedYear : estimatedNepali.year;
+
+            if (displayYear !== -1 && estimatedNepali.month !== -1 && estimatedNepali.day !== -1) {
+                 const nepaliDayName = nepaliDays[todayGregorian.getDay()];
+                 const nepaliDateString = `${nepaliMonths[estimatedNepali.month]} ${estimatedNepali.day}, ${displayYear}`;
+                 currentDateInfoElement.innerHTML = `Today: ${gregDayName}, ${gregDateString} <br> <span class="nepali-date">${nepaliDayName}, ${nepaliDateString} (estimated)</span>`;
+            } else {
+                 currentDateInfoElement.textContent = `Today: ${gregDayName}, ${gregDateString} (Nepali date unavailable)`;
+            }
+         }
+
+        // --- Event Listeners ---
+        prevMonthButton.addEventListener('click', () => {
+            if (currentNepaliMonth > 0) {
+                currentNepaliMonth--;
+                renderCalendar(currentNepaliYear, currentNepaliMonth);
+            }
+        });
+
+        nextMonthButton.addEventListener('click', () => {
+             if (currentNepaliMonth < 11) {
+                currentNepaliMonth++;
+                renderCalendar(currentNepaliYear, currentNepaliMonth);
+            }
+        });
+
+        // --- Initialization ---
+        function initCalendar() {
+            currentNepaliYear = TARGET_YEAR;
+            currentNepaliMonth = 0; // Start at Baisakh
+            displayCurrentDateInfo(); // Sets todayNepali needed for highlighting
+            renderCalendar(currentNepaliYear, currentNepaliMonth);
+        }
+
+        document.addEventListener('DOMContentLoaded', initCalendar);
+
+    </script>
+
+</body>
+</html>
